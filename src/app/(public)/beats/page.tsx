@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getPublishedBeats } from "@/lib/data/beats";
 import { BeatGrid } from "@/components/beats/beat-grid";
 import { FilterBar } from "@/components/beats/filter-bar";
@@ -23,11 +24,13 @@ export default async function BeatsPage({ searchParams }: BeatsPageProps) {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.3em] text-lime-300">Browse</p>
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-lime-300">ค้นบีท</p>
         <h1 className="mt-3 text-4xl font-black text-white">Beats ทั้งหมด</h1>
-        <p className="mt-2 text-zinc-400">Filter พื้นฐานสำหรับ MVP ก่อนเพิ่ม BPM slider, price และ mood filter แบบละเอียด</p>
+        <p className="mt-2 text-zinc-400">กรองแนวเพลงและคำค้นเบื้องต้น ก่อนขยายเป็น BPM ราคา และ mood ในเวอร์ชันถัดไป</p>
       </div>
-      <FilterBar activeGenre={params.genre} query={params.q} />
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-3xl bg-zinc-900/60" aria-hidden />}>
+        <FilterBar key={`${params.q ?? ""}|${params.genre ?? ""}`} />
+      </Suspense>
       {beats.length > 0 ? <BeatGrid beats={beats} /> : <p className="rounded-3xl border border-zinc-800 p-8 text-zinc-400">ไม่พบบีทตาม filter นี้</p>}
     </div>
   );

@@ -19,8 +19,10 @@ export default async function HomePage() {
             MVP สำหรับ single-producer store: preview บีท เลือก license ใส่ cart และ checkout mock ก่อนต่อ PromptPay จริง
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <LinkButton href="/beats">Browse Beats</LinkButton>
-            <LinkButton href="/free" variant="secondary">Free Beat Funnel</LinkButton>
+            <LinkButton href="/beats">ค้นบีท</LinkButton>
+            <LinkButton href="/free" variant="secondary">
+              รับบีทฟรี
+            </LinkButton>
           </div>
         </div>
         <Card className="bg-gradient-to-br from-lime-300/20 to-fuchsia-500/10">
@@ -33,10 +35,12 @@ export default async function HomePage() {
       <section className="space-y-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-black text-white">Featured Beats</h2>
+            <h2 className="text-3xl font-black text-white">บีทแนะนำ</h2>
             <p className="mt-2 text-zinc-400">อ่านจาก Supabase เมื่อมี env และ fallback เป็น demo data ระหว่างพัฒนา</p>
           </div>
-          <LinkButton href="/beats" variant="ghost">View all</LinkButton>
+          <LinkButton href="/beats" variant="ghost">
+            ดูทั้งหมด
+          </LinkButton>
         </div>
         <BeatGrid beats={featured} />
       </section>

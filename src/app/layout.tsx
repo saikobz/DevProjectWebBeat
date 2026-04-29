@@ -14,7 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="th">
       <body className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         <Nav />
-        <main className="mx-auto min-h-[calc(100vh-160px)] max-w-6xl px-4 py-10 pb-44 sm:pb-36">{children}</main>
+        <main className="mx-auto min-h-[calc(100vh-160px)] max-w-6xl scroll-pb-32 px-4 py-10 pb-52 sm:pb-44">{children}</main>
         <Footer />
         <PersistentPlayer />
       </body>

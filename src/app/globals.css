@@ -18,3 +18,16 @@ body {
 a {
   text-decoration: none;
 }
+
+/*
+  Tailwind Preflight ไม่ตั้ง pointer ให้ปุ่ม — ให้สอดคล้องกับลิงก์และ affordance ของคอนโทรลที่คลิกได้
+*/
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}

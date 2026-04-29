@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getBeatBySlug, getPublishedBeats } from "@/lib/data/beats";
 import { formatDuration } from "@/lib/format";
 import { BeatGrid } from "@/components/beats/beat-grid";
-import { PlayButton } from "@/components/player/play-button";
+import { BeatPreviewCard } from "@/components/beats/beat-preview-card";
 import { LicenseSelector } from "@/components/license/license-selector";
 import { Card } from "@/components/ui/card";
 
@@ -45,16 +45,7 @@ export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
             <h1 className="mt-3 text-5xl font-black text-white">{beat.title}</h1>
             <p className="mt-4 max-w-2xl text-zinc-300">{beat.description}</p>
           </div>
-          <Card>
-            <div className="flex items-center gap-4">
-              <PlayButton beat={beat} queue={publishedBeats} />
-              <div>
-                <p className="font-semibold text-white">Preview Player</p>
-                <p className="text-sm text-zinc-400">Waveform placeholder ก่อนต่อ wavesurfer peaks จริง</p>
-              </div>
-            </div>
-            <div className="mt-6 h-24 rounded-2xl bg-[linear-gradient(90deg,#bef264_10%,#3f3f46_10%,#3f3f46_20%,#bef264_20%,#bef264_35%,#3f3f46_35%,#3f3f46_50%,#bef264_50%,#bef264_65%,#3f3f46_65%,#3f3f46_80%,#bef264_80%)] opacity-70" />
-          </Card>
+          <BeatPreviewCard beat={beat} queue={publishedBeats} />
           <div className="grid gap-3 sm:grid-cols-4">
             <Card><p className="text-sm text-zinc-500">BPM</p><p className="mt-1 font-bold text-white">{beat.bpm}</p></Card>
             <Card><p className="text-sm text-zinc-500">Key</p><p className="mt-1 font-bold text-white">{beat.key}</p></Card>
@@ -72,7 +63,7 @@ export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
       </section>
       {related.length > 0 ? (
         <section className="space-y-5">
-          <h2 className="text-3xl font-black text-white">Related Beats</h2>
+          <h2 className="text-3xl font-black text-white">บีทที่เกี่ยวข้อง</h2>
           <BeatGrid beats={related} />
         </section>
       ) : null}

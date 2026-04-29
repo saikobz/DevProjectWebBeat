@@ -24,9 +24,11 @@ export function CheckoutForm() {
   if (items.length === 0) {
     return (
       <Card className="text-center">
-        <h1 className="text-2xl font-bold text-white">ยังไม่มีสินค้าใน cart</h1>
-        <p className="mt-2 text-zinc-400">กลับไปเลือกบีทก่อน checkout</p>
-        <LinkButton href="/beats" className="mt-6">Browse Beats</LinkButton>
+        <h1 className="text-2xl font-bold text-white">ยังไม่มีสินค้าในตะกร้า</h1>
+        <p className="mt-2 text-zinc-400">กลับไปเลือกบีทก่อนชำระเงิน</p>
+        <LinkButton href="/beats" className="mt-6">
+          ไปค้นบีท
+        </LinkButton>
       </Card>
     );
   }
@@ -76,7 +78,7 @@ export function CheckoutForm() {
       }}
     >
       <Card>
-        <h1 className="text-2xl font-bold text-white">Checkout</h1>
+        <h1 className="text-2xl font-bold text-white">ชำระเงิน</h1>
         <p className="mt-2 text-zinc-400">กรอกข้อมูลสำหรับออก license และรับไฟล์ ระบบจะสร้างออเดอร์ก่อนพาไปขั้นตอนชำระเงิน</p>
         <label className="mt-6 block text-sm font-semibold text-white" htmlFor="customerName">
           ชื่อสำหรับออก License
@@ -93,7 +95,7 @@ export function CheckoutForm() {
         />
         <p className="mt-2 text-xs text-zinc-500">ชื่อนี้จะถูกใช้ในเอกสาร license และข้อมูลคำสั่งซื้อ</p>
         <label className="mt-6 block text-sm font-semibold text-white" htmlFor="email">
-          Email สำหรับรับไฟล์
+          อีเมลสำหรับรับไฟล์
         </label>
         <input
           id="email"
@@ -101,7 +103,7 @@ export function CheckoutForm() {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
+          placeholder="ชื่อ@example.com"
           autoComplete="email"
           className="mt-2 min-h-11 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-lime-300 focus-visible:ring-2 focus-visible:ring-lime-300/60"
         />
@@ -114,7 +116,7 @@ export function CheckoutForm() {
         {error ? <p className="mt-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
       </Card>
       <Card className="h-fit lg:sticky lg:top-24">
-        <h2 className="text-xl font-bold text-white">Summary</h2>
+        <h2 className="text-xl font-bold text-white">สรุปรายการ</h2>
         <p className="mt-2 text-sm text-zinc-400">{items.length} รายการในออเดอร์นี้</p>
         <div className="mt-4 space-y-3">
           {items.map((item) => (
@@ -128,11 +130,11 @@ export function CheckoutForm() {
           ))}
         </div>
         <div className="mt-5 flex justify-between border-t border-zinc-800 pt-5">
-          <span className="text-zinc-300">Total</span>
+          <span className="text-zinc-300">ยอดรวม</span>
           <span className="font-black text-lime-300">{formatTHB(total)}</span>
         </div>
         <Button className="mt-6 w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Processing..." : "Pay Now"}
+          {isSubmitting ? "กำลังดำเนินการ..." : "ชำระเงิน"}
         </Button>
         <LinkButton href="/cart" variant="ghost" className="mt-3 w-full">
           กลับไปแก้ไขตะกร้า

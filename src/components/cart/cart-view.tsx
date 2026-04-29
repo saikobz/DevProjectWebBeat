@@ -17,7 +17,9 @@ export function CartView() {
       <Card className="text-center">
         <h1 className="text-2xl font-bold text-white">Cart ว่างอยู่</h1>
         <p className="mt-2 text-zinc-400">เลือกบีทและ license ก่อนเริ่ม checkout</p>
-        <LinkButton href="/beats" className="mt-6">Browse Beats</LinkButton>
+        <LinkButton href="/beats" className="mt-6">
+          ไปค้นบีท
+        </LinkButton>
       </Card>
     );
   }
@@ -28,7 +30,7 @@ export function CartView() {
         {items.map((item) => (
           <Card key={item.licenseId} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">Beat</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">บีท</p>
               <Link
                 href={`/beats/${item.beatSlug}`}
                 className="mt-1 inline-block wrap-break-word font-semibold text-white transition hover:text-lime-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
@@ -44,22 +46,24 @@ export function CartView() {
                 onClick={() => removeItem(item.licenseId)}
                 type="button"
               >
-                remove
+                ลบ
               </button>
             </div>
           </Card>
         ))}
       </div>
       <Card className="h-fit lg:sticky lg:top-24">
-        <h2 className="text-xl font-bold text-white">Order Summary</h2>
+        <h2 className="text-xl font-bold text-white">สรุปยอด</h2>
         <p className="mt-2 text-sm text-zinc-400">{items.length} รายการ พร้อมไป checkout</p>
         <div className="mt-5 flex justify-between text-zinc-300">
-          <span>Total</span>
+          <span>ยอดรวม</span>
           <span className="text-2xl font-black text-lime-300">{formatTHB(total)}</span>
         </div>
-        <LinkButton href="/checkout" className="mt-6 w-full">Checkout</LinkButton>
+        <LinkButton href="/checkout" className="mt-6 w-full">
+          ไปชำระเงิน
+        </LinkButton>
         <Button variant="ghost" className="mt-3 w-full" onClick={() => clear()}>
-          Clear cart
+          ล้างตะกร้า
         </Button>
       </Card>
     </div>

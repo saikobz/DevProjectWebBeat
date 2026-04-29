@@ -70,13 +70,15 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
           setAddedLicenseId(selected.id);
         }}
       >
-        {addedLicenseId === selected.id ? "Added to Cart" : `Add to Cart - ${formatTHB(selected.priceThb)}`}
+        {addedLicenseId === selected.id ? "เพิ่มในตะกร้าแล้ว" : `ใส่ตะกร้า - ${formatTHB(selected.priceThb)}`}
       </Button>
       {addedLicenseId ? (
         <div className="rounded-2xl border border-lime-300/30 bg-lime-300/10 p-3 text-sm text-lime-100">
-          เพิ่ม {selected.name} ลงตะกร้าแล้ว ถ้าเลือก license ใหม่ของบีทนี้ ระบบจะอัปเดตรายการเดิมใน cart
+          เพิ่ม {selected.name} ลงตะกร้าแล้ว ถ้าเลือก license ใหม่ของบีทนี้ ระบบจะอัปเดตรายการเดิมในตะกร้า
           <div className="mt-3">
-            <LinkButton href="/cart" variant="secondary">ไป Cart</LinkButton>
+            <LinkButton href="/cart" variant="secondary">
+              ไปตะกร้า
+            </LinkButton>
           </div>
         </div>
       ) : null}
