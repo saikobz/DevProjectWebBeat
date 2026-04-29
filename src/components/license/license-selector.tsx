@@ -35,8 +35,8 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
             }}
             className={
               selected.id === license.id
-                ? "rounded-2xl border border-lime-300 bg-lime-300/10 p-4 text-left"
-                : "rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left hover:border-zinc-600"
+                ? "min-h-11 rounded-2xl border border-lime-300 bg-lime-300/10 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+                : "min-h-11 rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left transition hover:border-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
             }
           >
             <div className="flex items-start justify-between gap-3">

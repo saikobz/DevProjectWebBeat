@@ -17,7 +17,13 @@ export function BeatCard({ beat, queue }: BeatCardProps) {
     <Card className="group overflow-hidden p-0">
       <div className="relative aspect-square overflow-hidden rounded-t-3xl bg-zinc-800">
         {beat.coverUrl ? (
-          <Image src={beat.coverUrl} alt="" fill className="object-cover transition duration-300 group-hover:scale-105" />
+          <Image
+            src={beat.coverUrl}
+            alt={`Cover artwork for ${beat.title}`}
+            fill
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+            className="object-cover transition duration-300 group-hover:scale-105"
+          />
         ) : null}
         <div className="absolute bottom-4 left-4">
           <PlayButton beat={beat} queue={queue} />
@@ -25,7 +31,10 @@ export function BeatCard({ beat, queue }: BeatCardProps) {
       </div>
       <div className="space-y-4 p-5">
         <div>
-          <Link href={`/beats/${beat.slug}`} className="text-lg font-bold text-white hover:text-lime-300">
+          <Link
+            href={`/beats/${beat.slug}`}
+            className="rounded-sm text-lg font-bold text-white transition hover:text-lime-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+          >
             {beat.title}
           </Link>
           <p className="mt-1 text-sm text-zinc-400">

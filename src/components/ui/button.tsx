@@ -8,6 +8,9 @@ const variants = {
   ghost: "bg-transparent text-zinc-200 hover:bg-zinc-800"
 };
 
+const baseClassName =
+  "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed disabled:opacity-60";
+
 type BaseProps = {
   children: ReactNode;
   variant?: keyof typeof variants;
@@ -20,7 +23,7 @@ type LinkButtonProps = BaseProps & AnchorHTMLAttributes<HTMLAnchorElement> & { h
 export function Button({ children, variant = "primary", className, ...props }: ButtonProps) {
   return (
     <button
-      className={cn("inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition", variants[variant], className)}
+      className={cn(baseClassName, variants[variant], className)}
       {...props}
     >
       {children}
@@ -32,7 +35,7 @@ export function LinkButton({ children, href, variant = "primary", className, ...
   return (
     <Link
       href={href}
-      className={cn("inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition", variants[variant], className)}
+      className={cn(baseClassName, variants[variant], className)}
       {...props}
     >
       {children}

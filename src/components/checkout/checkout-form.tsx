@@ -34,6 +34,7 @@ export function CheckoutForm() {
   return (
     <form
       className="grid gap-6 lg:grid-cols-[1fr_360px]"
+      aria-busy={isSubmitting}
       onSubmit={async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
@@ -76,7 +77,7 @@ export function CheckoutForm() {
     >
       <Card>
         <h1 className="text-2xl font-bold text-white">Checkout</h1>
-        <p className="mt-2 text-zinc-400">สร้างออเดอร์ผ่าน API และต่อ Omise เมื่อมี env พร้อมใช้งาน</p>
+        <p className="mt-2 text-zinc-400">กรอกข้อมูลสำหรับออก license และรับไฟล์ ระบบจะสร้างออเดอร์ก่อนพาไปขั้นตอนชำระเงิน</p>
         <label className="mt-6 block text-sm font-semibold text-white" htmlFor="customerName">
           ชื่อสำหรับออก License
         </label>
@@ -87,8 +88,10 @@ export function CheckoutForm() {
           value={customerName}
           onChange={(event) => setCustomerName(event.target.value)}
           placeholder="ชื่อ-นามสกุล หรือ artist/company name"
-          className="mt-2 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-lime-300"
+          autoComplete="name"
+          className="mt-2 min-h-11 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-lime-300 focus-visible:ring-2 focus-visible:ring-lime-300/60"
         />
+        <p className="mt-2 text-xs text-zinc-500">ชื่อนี้จะถูกใช้ในเอกสาร license และข้อมูลคำสั่งซื้อ</p>
         <label className="mt-6 block text-sm font-semibold text-white" htmlFor="email">
           Email สำหรับรับไฟล์
         </label>
@@ -99,20 +102,28 @@ export function CheckoutForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
-          className="mt-2 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-lime-300"
+          autoComplete="email"
+          className="mt-2 min-h-11 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-lime-300 focus-visible:ring-2 focus-visible:ring-lime-300/60"
         />
-        <div className="mt-6 rounded-2xl border border-dashed border-zinc-700 p-4 text-sm text-zinc-400">
-          Payment method: PromptPay / mock fallback ตาม env ที่ตั้งไว้
+        <p className="mt-2 text-xs text-zinc-500">ตรวจสอบอีเมลให้ถูกต้องเพื่อใช้รับไฟล์และลิงก์ดาวน์โหลด</p>
+        <div className="mt-6 space-y-2 rounded-2xl border border-dashed border-zinc-700 p-4 text-sm text-zinc-400">
+          <p className="font-medium text-zinc-200">ก่อนชำระเงิน</p>
+          <p>ระบบจะสรุปรายการ สร้างออเดอร์ และพาไปชำระผ่าน PromptPay เมื่อ integration พร้อมใช้งาน</p>
+          <p>ถ้ายังไม่ได้ตั้งค่า payment env ระบบจะใช้ mock fallback สำหรับการทดสอบ flow</p>
         </div>
         {error ? <p className="mt-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
       </Card>
-      <Card className="h-fit">
+      <Card className="h-fit lg:sticky lg:top-24">
         <h2 className="text-xl font-bold text-white">Summary</h2>
+        <p className="mt-2 text-sm text-zinc-400">{items.length} รายการในออเดอร์นี้</p>
         <div className="mt-4 space-y-3">
           {items.map((item) => (
-            <div className="flex justify-between gap-4 text-sm" key={item.licenseId}>
-              <span className="text-zinc-300">{item.beatTitle}</span>
-              <span className="text-zinc-400">{formatTHB(item.priceThb)}</span>
+            <div className="flex flex-col gap-1 border-b border-zinc-800/80 pb-3 text-sm last:border-b-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4" key={item.licenseId}>
+              <div className="min-w-0">
+                <span className="block wrap-break-word text-zinc-300">{item.beatTitle}</span>
+                <span className="text-xs text-zinc-500">{item.licenseName}</span>
+              </div>
+              <span className="font-medium text-zinc-400">{formatTHB(item.priceThb)}</span>
             </div>
           ))}
         </div>
@@ -123,6 +134,9 @@ export function CheckoutForm() {
         <Button className="mt-6 w-full" disabled={isSubmitting}>
           {isSubmitting ? "Processing..." : "Pay Now"}
         </Button>
+        <LinkButton href="/cart" variant="ghost" className="mt-3 w-full">
+          กลับไปแก้ไขตะกร้า
+        </LinkButton>
       </Card>
     </form>
   );
