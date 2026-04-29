@@ -19,6 +19,7 @@ export type OrderItem = CartItem & {
 export type Order = {
   id: string;
   orderNumber: string;
+  customerName: string;
   email: string;
   status: OrderStatus;
   totalThb: number;

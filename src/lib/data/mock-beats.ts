@@ -1,48 +1,31 @@
-import { LICENSE_COPY } from "@/lib/constants";
+import { getLicenseTierConfig } from "@/lib/license/terms";
 import type { Beat, BeatLicense, LicenseTier } from "@/types";
 
 const previewUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
-function makeLicense(beatId: string, tier: LicenseTier, priceThb: number): BeatLicense {
+function makeLicense(beatId: string, tier: LicenseTier): BeatLicense {
+  const config = getLicenseTierConfig(tier);
+
   return {
     id: `${beatId}-${tier}`,
     beatId,
     tier,
-    name: LICENSE_COPY[tier].name,
-    priceThb,
-    files:
-      tier === "basic"
-        ? ["MP3 untagged"]
-        : tier === "premium"
-          ? ["WAV", "MP3 untagged"]
-          : ["WAV", "MP3 untagged", "Stems"],
-    terms: {
-      streamLimit:
-        tier === "basic" ? 5000 : tier === "premium" ? 50000 : tier === "trackout" ? 100000 : null,
-      monetization: tier !== "basic",
-      musicVideo: tier !== "basic",
-      stemsIncluded: tier === "trackout" || tier === "exclusive",
-      creditRequired: true
-    },
+    name: config.name,
+    priceThb: config.priceThb,
+    files: config.terms.files,
+    terms: config.terms,
     isAvailable: true
   };
 }
 
 function makeBeat(input: Omit<Beat, "licenses" | "previewUrl" | "wavPath" | "status" | "publishedAt">): Beat {
-  const prices: Record<LicenseTier, number> = {
-    basic: 399,
-    premium: 999,
-    trackout: 2499,
-    exclusive: 12000
-  };
-
   return {
     ...input,
     previewUrl,
     wavPath: `private/wav/${input.slug}.wav`,
     status: "published",
     publishedAt: "2026-04-29T10:00:00.000Z",
-    licenses: (Object.keys(prices) as LicenseTier[]).map((tier) => makeLicense(input.id, tier, prices[tier]))
+    licenses: (["basic", "premium", "trackout", "exclusive"] as LicenseTier[]).map((tier) => makeLicense(input.id, tier))
   };
 }
 

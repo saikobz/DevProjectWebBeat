@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { formatTHB } from "@/lib/format";
-import { LICENSE_COPY, LICENSE_ORDER } from "@/lib/constants";
+import { LICENSE_ORDER } from "@/lib/constants";
+import { getLicenseTierConfig } from "@/lib/license/terms";
 import { useCartStore } from "@/stores/cart-store";
 import type { Beat, BeatLicense } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -37,10 +38,17 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-white">{license.name}</p>
-                <p className="mt-1 text-sm text-zinc-400">{LICENSE_COPY[license.tier].summary}</p>
+                <p className="mt-1 text-sm text-zinc-400">{getLicenseTierConfig(license.tier).summary}</p>
               </div>
               <span className="font-bold text-lime-300">{formatTHB(license.priceThb)}</span>
             </div>
+            <p className="mt-3 text-xs text-zinc-500">
+              {license.terms.streamLimit ? `จำกัด ${license.terms.streamLimit.toLocaleString("th-TH")} streams/sales` : "ไม่จำกัด streams/sales"}
+              {" - "}
+              {license.terms.exclusive ? "exclusive" : "non-exclusive"}
+              {" - "}
+              publishing split {license.terms.publishingSplit.licensee}/{license.terms.publishingSplit.producer}
+            </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-300">
               {license.files.map((file) => (
                 <span key={file} className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-1">

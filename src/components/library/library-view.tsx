@@ -3,8 +3,13 @@
 import { useSyncExternalStore } from "react";
 import { formatDateTime, formatTHB } from "@/lib/format";
 import { getMockOrders } from "@/stores/mock-order-store";
+import type { Order } from "@/types";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/button";
+
+const emptyOrders: Order[] = [];
+let cachedOrdersRaw: string | null = null;
+let cachedPaidOrders: Order[] = emptyOrders;
 
 function subscribeToOrders(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -12,11 +17,23 @@ function subscribeToOrders(callback: () => void) {
 }
 
 function getPaidOrdersSnapshot() {
-  return getMockOrders().filter((order) => order.status === "paid");
+  const ordersRaw = window.localStorage.getItem("webbeat-orders");
+  if (ordersRaw === cachedOrdersRaw) {
+    return cachedPaidOrders;
+  }
+
+  cachedOrdersRaw = ordersRaw;
+  const orders = getMockOrders().filter((order) => order.status === "paid");
+  cachedPaidOrders = orders.length > 0 ? orders : emptyOrders;
+  return cachedPaidOrders;
+}
+
+function getServerOrdersSnapshot() {
+  return emptyOrders;
 }
 
 export function LibraryView() {
-  const orders = useSyncExternalStore(subscribeToOrders, getPaidOrdersSnapshot, () => []);
+  const orders = useSyncExternalStore(subscribeToOrders, getPaidOrdersSnapshot, getServerOrdersSnapshot);
 
   if (orders.length === 0) {
     return (
@@ -35,6 +52,7 @@ export function LibraryView() {
           <div className="flex flex-col justify-between gap-2 md:flex-row">
             <div>
               <p className="font-bold text-white">{order.orderNumber}</p>
+              <p className="text-sm text-zinc-300">{order.customerName}</p>
               <p className="text-sm text-zinc-400">{formatDateTime(order.paidAt ?? order.createdAt)}</p>
             </div>
             <p className="font-bold text-lime-300">{formatTHB(order.totalThb)}</p>

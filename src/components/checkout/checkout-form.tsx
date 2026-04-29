@@ -12,6 +12,7 @@ export function CheckoutForm() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const clear = useCartStore((state) => state.clear);
+  const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const total = getCartTotal(items);
@@ -32,7 +33,7 @@ export function CheckoutForm() {
       onSubmit={(event) => {
         event.preventDefault();
         setIsSubmitting(true);
-        const order = saveMockOrder(email, items);
+        const order = saveMockOrder(customerName, email, items);
         clear();
         router.push(`/checkout/success?order=${order.id}`);
       }}
@@ -40,6 +41,18 @@ export function CheckoutForm() {
       <Card>
         <h1 className="text-2xl font-bold text-white">Checkout</h1>
         <p className="mt-2 text-zinc-400">MVP ตอนนี้เป็น mock payment เพื่อทดสอบ flow ก่อนต่อ Omise PromptPay จริง</p>
+        <label className="mt-6 block text-sm font-semibold text-white" htmlFor="customerName">
+          ชื่อสำหรับออก License
+        </label>
+        <input
+          id="customerName"
+          type="text"
+          required
+          value={customerName}
+          onChange={(event) => setCustomerName(event.target.value)}
+          placeholder="ชื่อ-นามสกุล หรือ artist/company name"
+          className="mt-2 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-lime-300"
+        />
         <label className="mt-6 block text-sm font-semibold text-white" htmlFor="email">
           Email สำหรับรับไฟล์
         </label>

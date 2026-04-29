@@ -49,18 +49,27 @@ select
   tier::license_tier,
   price,
   jsonb_build_object(
-    'stream_limit', stream_limit,
+    'streamLimit', stream_limit,
     'monetization', monetization,
-    'music_video', music_video,
-    'stems_included', stems_included,
-    'credit_required', true
+    'musicVideo', music_video,
+    'livePerformance', true,
+    'stemsIncluded', stems_included,
+    'creditRequired', true,
+    'exclusive', exclusive,
+    'publishingSplit', jsonb_build_object('licensee', 50, 'producer', 50),
+    'masterRights', jsonb_build_object(
+      'beatMasterOwner', 'producer',
+      'finalSongMasterOwner', 'licensee',
+      'transferBeatMaster', false
+    ),
+    'files', files
   )
 from public.beats b
 cross join (
   values
-    ('basic', 399, 5000, false, false, false),
-    ('premium', 999, 50000, true, true, false),
-    ('trackout', 2499, 100000, true, true, true),
-    ('exclusive', 12000, null, true, true, true)
-) as licenses(tier, price, stream_limit, monetization, music_video, stems_included)
+    ('basic', 399, 5000, false, false, false, false, to_jsonb(array['MP3 untagged']::text[])),
+    ('premium', 999, 50000, true, true, false, false, to_jsonb(array['WAV', 'MP3 untagged']::text[])),
+    ('trackout', 2499, 100000, true, true, true, false, to_jsonb(array['WAV', 'MP3 untagged', 'Stems']::text[])),
+    ('exclusive', 12000, null, true, true, true, true, to_jsonb(array['WAV', 'MP3 untagged', 'Stems']::text[]))
+) as licenses(tier, price, stream_limit, monetization, music_video, stems_included, exclusive, files)
 on conflict (beat_id, tier) do nothing;
