@@ -1,10 +1,10 @@
-import { getPublishedBeats } from "@/lib/data/mock-beats";
+import { getPublishedBeats } from "@/lib/data/beats";
 import { BeatGrid } from "@/components/beats/beat-grid";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-export default function HomePage() {
-  const beats = getPublishedBeats();
+export default async function HomePage() {
+  const beats = await getPublishedBeats();
   const featured = beats.filter((beat) => beat.isFeatured).slice(0, 3);
 
   return (
@@ -34,7 +34,7 @@ export default function HomePage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-black text-white">Featured Beats</h2>
-            <p className="mt-2 text-zinc-400">เริ่มจาก mock data เพื่อ build UX ให้เร็ว</p>
+            <p className="mt-2 text-zinc-400">อ่านจาก Supabase เมื่อมี env และ fallback เป็น demo data ระหว่างพัฒนา</p>
           </div>
           <LinkButton href="/beats" variant="ghost">View all</LinkButton>
         </div>

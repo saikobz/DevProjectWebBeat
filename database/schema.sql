@@ -56,6 +56,7 @@ create table public.orders (
   order_number text unique,
   user_id uuid references auth.users(id) on delete set null,
   email text not null,
+  customer_name text,
   total_thb integer not null check (total_thb >= 0),
   status order_status not null default 'pending',
   payment_method payment_method not null default 'mock',
@@ -125,6 +126,23 @@ create trigger update_profiles_updated_at
 before update on public.profiles
 for each row execute function public.update_updated_at_column();
 
+create or replace function public.handle_new_user_profile()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, display_name)
+  values (new.id, new.email, new.raw_user_meta_data ->> 'display_name')
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_user_profile();
+
 create trigger update_beats_updated_at
 before update on public.beats
 for each row execute function public.update_updated_at_column();
@@ -146,6 +164,16 @@ create sequence if not exists public.order_number_seq;
 create trigger set_order_number
 before insert on public.orders
 for each row execute function public.generate_order_number();
+
+create or replace function public.increment_beat_sale_count(beat_id_input uuid)
+returns void
+language sql
+security definer
+as $$
+  update public.beats
+  set sale_count = sale_count + 1
+  where id = beat_id_input;
+$$;
 
 create or replace view public.beats_for_browse as
 select
@@ -187,6 +215,26 @@ for select using (auth.uid() = id);
 
 create policy "Users can read own orders" on public.orders
 for select using (auth.uid() = user_id);
+
+create policy "Users can read own order items" on public.order_items
+for select using (
+  exists (
+    select 1 from public.orders
+    where orders.id = order_items.order_id
+    and orders.user_id = auth.uid()
+  )
+);
+
+create policy "Users can read own download tokens" on public.download_tokens
+for select using (
+  exists (
+    select 1
+    from public.order_items
+    join public.orders on orders.id = order_items.order_id
+    where order_items.id = download_tokens.order_item_id
+    and orders.user_id = auth.uid()
+  )
+);
 
 create policy "Newsletter public insert" on public.email_subscribers
 for insert with check (true);

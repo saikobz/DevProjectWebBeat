@@ -14,6 +14,11 @@ export type CartItem = {
 
 export type OrderItem = CartItem & {
   licensePdfPath?: string;
+  downloadLinks?: Array<{
+    label: string;
+    url: string;
+    expiresAt: string;
+  }>;
 };
 
 export type Order = {

@@ -1,45 +1,19 @@
-"use client";
-
-import { useSyncExternalStore } from "react";
 import { formatDateTime, formatTHB } from "@/lib/format";
-import { getMockOrders } from "@/stores/mock-order-store";
 import type { Order } from "@/types";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/button";
 
-const emptyOrders: Order[] = [];
-let cachedOrdersRaw: string | null = null;
-let cachedPaidOrders: Order[] = emptyOrders;
+type LibraryViewProps = {
+  orders: Order[];
+  emptyMessage?: string;
+};
 
-function subscribeToOrders(callback: () => void) {
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
-}
-
-function getPaidOrdersSnapshot() {
-  const ordersRaw = window.localStorage.getItem("webbeat-orders");
-  if (ordersRaw === cachedOrdersRaw) {
-    return cachedPaidOrders;
-  }
-
-  cachedOrdersRaw = ordersRaw;
-  const orders = getMockOrders().filter((order) => order.status === "paid");
-  cachedPaidOrders = orders.length > 0 ? orders : emptyOrders;
-  return cachedPaidOrders;
-}
-
-function getServerOrdersSnapshot() {
-  return emptyOrders;
-}
-
-export function LibraryView() {
-  const orders = useSyncExternalStore(subscribeToOrders, getPaidOrdersSnapshot, getServerOrdersSnapshot);
-
+export function LibraryView({ orders, emptyMessage = "ยังไม่มี order ที่ชำระสำเร็จ" }: LibraryViewProps) {
   if (orders.length === 0) {
     return (
       <Card className="text-center">
         <h1 className="text-2xl font-bold text-white">My Library</h1>
-        <p className="mt-2 text-zinc-400">ยังไม่มี order ที่ชำระสำเร็จใน mock storage</p>
+        <p className="mt-2 text-zinc-400">{emptyMessage}</p>
         <LinkButton href="/beats" className="mt-6">Browse Beats</LinkButton>
       </Card>
     );
@@ -64,9 +38,17 @@ export function LibraryView() {
                   <p className="font-semibold text-white">{item.beatTitle}</p>
                   <p className="text-sm text-zinc-400">{item.licenseName}</p>
                 </div>
-                <a className="text-sm font-semibold text-lime-300" href={`/api/downloads/mock?beat=${item.beatId}`}>
-                  Download placeholder
-                </a>
+                <div className="flex flex-wrap gap-3">
+                  {item.downloadLinks?.length ? (
+                    item.downloadLinks.map((link) => (
+                      <a className="text-sm font-semibold text-lime-300" download rel="noreferrer" href={link.url} key={link.url}>
+                        {link.label}
+                      </a>
+                    ))
+                  ) : (
+                    <span className="text-sm text-zinc-500">รอสร้างลิงก์ดาวน์โหลด</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -33,7 +33,7 @@ npm install
 Copy-Item .env.example .env.local
 ```
 
-สำหรับ MVP ปัจจุบันสามารถรันหน้า public/cart/mock checkout ได้แม้ยังไม่ใส่ค่า env จริง แต่ route ที่ protected ด้วย middleware เช่น `/library`, `/orders`, `/account`, `/admin` จะ redirect ไป `/login` ถ้ายังไม่ได้ตั้งค่า Supabase/Auth
+สำหรับ MVP ปัจจุบันสามารถรันหน้า public, cart, checkout และหน้า account/library/orders/admin แบบ fallback ได้แม้ยังไม่ใส่ค่า env จริง โดย middleware จะเริ่ม enforce การ login เมื่อมีการตั้งค่า Supabase/Auth แล้วเท่านั้น
 
 ค่าที่เตรียมไว้ใน `.env.example`:
 
@@ -133,8 +133,8 @@ npm run typecheck
 src/
   app/                 Next.js App Router routes
   components/          UI, layout, player, beats, cart, checkout, admin
-  lib/                 utilities, mock data, license terms/placeholders, service wrappers
-  stores/              Zustand stores และ mock order localStorage
+  lib/                 utilities, data access, license terms, integrations และ service wrappers
+  stores/              Zustand stores สำหรับ cart/player
   types/               TypeScript shared types
 
 database/              Supabase schema และ seed
@@ -143,9 +143,9 @@ licenses/              Markdown license templates 4 tier
 
 ## Current MVP Notes
 
-- Checkout ตอนนี้เป็น mock payment และบันทึก order ใน `localStorage`
+- Checkout สร้าง order ผ่าน API แล้ว และ fallback เป็น mock เฉพาะตอนยังไม่ตั้งค่า integration env
 - License templates ยังเป็น draft ต้องให้ทนายความตรวจสอบก่อนใช้จริง
-- PDF generation, Resend email, Omise payment และ R2 signed downloads เป็น placeholder สำหรับเฟสถัดไป
+- PDF generation, Resend email, Omise payment และ R2 signed downloads มี implementation พื้นฐานแล้ว แต่ต้องตั้งค่า env/บัญชีจริงก่อนใช้ production
 - Middleware จะ enforce protected routes เมื่อมี Supabase env configured
 
 ## Verify Before Commit

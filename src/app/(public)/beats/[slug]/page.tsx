@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getBeatBySlug, getPublishedBeats } from "@/lib/data/mock-beats";
+import { getBeatBySlug, getPublishedBeats } from "@/lib/data/beats";
 import { formatDuration } from "@/lib/format";
 import { BeatGrid } from "@/components/beats/beat-grid";
 import { PlayButton } from "@/components/player/play-button";
@@ -13,12 +13,13 @@ type BeatDetailPageProps = {
 };
 
 export async function generateStaticParams() {
-  return getPublishedBeats().map((beat) => ({ slug: beat.slug }));
+  const beats = await getPublishedBeats();
+  return beats.map((beat) => ({ slug: beat.slug }));
 }
 
 export async function generateMetadata({ params }: BeatDetailPageProps) {
   const { slug } = await params;
-  const beat = getBeatBySlug(slug);
+  const beat = await getBeatBySlug(slug);
   return {
     title: beat ? `${beat.title} - WebBeatTH` : "Beat not found"
   };
@@ -26,11 +27,12 @@ export async function generateMetadata({ params }: BeatDetailPageProps) {
 
 export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
   const { slug } = await params;
-  const beat = getBeatBySlug(slug);
+  const beat = await getBeatBySlug(slug);
 
   if (!beat) notFound();
 
-  const related = getPublishedBeats()
+  const publishedBeats = await getPublishedBeats();
+  const related = publishedBeats
     .filter((item) => item.id !== beat.id && item.genre === beat.genre)
     .slice(0, 3);
 
@@ -45,7 +47,7 @@ export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
           </div>
           <Card>
             <div className="flex items-center gap-4">
-              <PlayButton beat={beat} queue={getPublishedBeats()} />
+              <PlayButton beat={beat} queue={publishedBeats} />
               <div>
                 <p className="font-semibold text-white">Preview Player</p>
                 <p className="text-sm text-zinc-400">Waveform placeholder ก่อนต่อ wavesurfer peaks จริง</p>

@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTHB } from "@/lib/format";
 import { useCartStore, getCartTotal } from "@/stores/cart-store";
-import { saveMockOrder } from "@/stores/mock-order-store";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+
+function navigateToExternalUrl(url: string) {
+  globalThis.location.assign(url);
+}
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -15,6 +18,7 @@ export function CheckoutForm() {
   const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const total = getCartTotal(items);
 
   if (items.length === 0) {
@@ -30,17 +34,49 @@ export function CheckoutForm() {
   return (
     <form
       className="grid gap-6 lg:grid-cols-[1fr_360px]"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
-        const order = saveMockOrder(customerName, email, items);
+        setError(null);
+
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            customerName,
+            email,
+            items
+          })
+        });
+
+        const result = (await response.json()) as {
+          error?: string;
+          order?: { id: string };
+          charge?: { authorizeUri?: string };
+        };
+
+        if (!response.ok || result.error || !result.order) {
+          setError(result.error ?? "ไม่สามารถสร้างออเดอร์ได้");
+          setIsSubmitting(false);
+          return;
+        }
+
         clear();
-        router.push(`/checkout/success?order=${order.id}`);
+        const nextUrl = result.charge?.authorizeUri ?? `/checkout/success?order=${result.order.id}`;
+
+        if (nextUrl.startsWith("http")) {
+          navigateToExternalUrl(nextUrl);
+          return;
+        }
+
+        router.push(nextUrl);
       }}
     >
       <Card>
         <h1 className="text-2xl font-bold text-white">Checkout</h1>
-        <p className="mt-2 text-zinc-400">MVP ตอนนี้เป็น mock payment เพื่อทดสอบ flow ก่อนต่อ Omise PromptPay จริง</p>
+        <p className="mt-2 text-zinc-400">สร้างออเดอร์ผ่าน API และต่อ Omise เมื่อมี env พร้อมใช้งาน</p>
         <label className="mt-6 block text-sm font-semibold text-white" htmlFor="customerName">
           ชื่อสำหรับออก License
         </label>
@@ -66,8 +102,9 @@ export function CheckoutForm() {
           className="mt-2 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-lime-300"
         />
         <div className="mt-6 rounded-2xl border border-dashed border-zinc-700 p-4 text-sm text-zinc-400">
-          Payment method: Mock PromptPay success
+          Payment method: PromptPay / mock fallback ตาม env ที่ตั้งไว้
         </div>
+        {error ? <p className="mt-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
       </Card>
       <Card className="h-fit">
         <h2 className="text-xl font-bold text-white">Summary</h2>
@@ -84,7 +121,7 @@ export function CheckoutForm() {
           <span className="font-black text-lime-300">{formatTHB(total)}</span>
         </div>
         <Button className="mt-6 w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Processing..." : "Mock Pay Success"}
+          {isSubmitting ? "Processing..." : "Pay Now"}
         </Button>
       </Card>
     </form>

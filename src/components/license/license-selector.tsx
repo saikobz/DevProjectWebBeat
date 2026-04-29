@@ -7,7 +7,7 @@ import { LICENSE_ORDER } from "@/lib/constants";
 import { getLicenseTierConfig } from "@/lib/license/terms";
 import { useCartStore } from "@/stores/cart-store";
 import type { Beat, BeatLicense } from "@/types";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 
 type LicenseSelectorProps = {
   beat: Beat;
@@ -19,6 +19,7 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
     [beat.licenses]
   );
   const [selected, setSelected] = useState<BeatLicense>(sortedLicenses[0]);
+  const [addedLicenseId, setAddedLicenseId] = useState<string | null>(null);
   const addItem = useCartStore((state) => state.addItem);
 
   return (
@@ -28,7 +29,10 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
           <button
             key={license.id}
             type="button"
-            onClick={() => setSelected(license)}
+            onClick={() => {
+              setSelected(license);
+              setAddedLicenseId(null);
+            }}
             className={
               selected.id === license.id
                 ? "rounded-2xl border border-lime-300 bg-lime-300/10 p-4 text-left"
@@ -59,9 +63,23 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
           </button>
         ))}
       </div>
-      <Button className="w-full" onClick={() => addItem(beat, selected)}>
-        Add to Cart - {formatTHB(selected.priceThb)}
+      <Button
+        className="w-full"
+        onClick={() => {
+          addItem(beat, selected);
+          setAddedLicenseId(selected.id);
+        }}
+      >
+        {addedLicenseId === selected.id ? "Added to Cart" : `Add to Cart - ${formatTHB(selected.priceThb)}`}
       </Button>
+      {addedLicenseId ? (
+        <div className="rounded-2xl border border-lime-300/30 bg-lime-300/10 p-3 text-sm text-lime-100">
+          เพิ่ม {selected.name} ลงตะกร้าแล้ว ถ้าเลือก license ใหม่ของบีทนี้ ระบบจะอัปเดตรายการเดิมใน cart
+          <div className="mt-3">
+            <LinkButton href="/cart" variant="secondary">ไป Cart</LinkButton>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

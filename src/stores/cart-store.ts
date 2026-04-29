@@ -26,9 +26,10 @@ export const useCartStore = create<CartState>()(
             licenseName: license.name,
             priceThb: license.priceThb
           };
+          const nextItems = [...state.items.filter((item) => item.beatId !== beat.id), nextItem];
 
           return {
-            items: [...state.items.filter((item) => item.beatId !== beat.id), nextItem]
+            items: nextItems
           };
         }),
       removeItem: (licenseId) =>

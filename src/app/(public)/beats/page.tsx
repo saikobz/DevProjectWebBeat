@@ -1,4 +1,4 @@
-import { getPublishedBeats } from "@/lib/data/mock-beats";
+import { getPublishedBeats } from "@/lib/data/beats";
 import { BeatGrid } from "@/components/beats/beat-grid";
 import { FilterBar } from "@/components/beats/filter-bar";
 
@@ -12,7 +12,8 @@ type BeatsPageProps = {
 export default async function BeatsPage({ searchParams }: BeatsPageProps) {
   const params = await searchParams;
   const query = params.q?.toLowerCase().trim();
-  const beats = getPublishedBeats().filter((beat) => {
+  const publishedBeats = await getPublishedBeats();
+  const beats = publishedBeats.filter((beat) => {
     const matchesGenre = params.genre ? beat.genre === params.genre : true;
     const searchable = [beat.title, beat.description, beat.genre, ...beat.mood, ...beat.tags].join(" ").toLowerCase();
     const matchesQuery = query ? searchable.includes(query) : true;
