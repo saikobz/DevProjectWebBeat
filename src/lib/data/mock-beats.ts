@@ -1,3 +1,4 @@
+import { placeholderCoverForSlug } from "@/lib/data/beat-cover";
 import { getLicenseTierConfig } from "@/lib/license/terms";
 import type { Beat, BeatLicense, LicenseTier } from "@/types";
 
@@ -41,7 +42,7 @@ export const mockBeats: Beat[] = [
     mood: ["dark", "aggressive"],
     tags: ["808", "thai rap", "club"],
     durationSec: 168,
-    coverUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&auto=format&fit=crop",
+    coverUrl: placeholderCoverForSlug("dark-trap-140-cmin"),
     isFeatured: true,
     saleCount: 12
   }),
@@ -56,7 +57,7 @@ export const mockBeats: Beat[] = [
     mood: ["smooth", "romantic"],
     tags: ["rnb", "slow jam", "vocal"],
     durationSec: 191,
-    coverUrl: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=900&auto=format&fit=crop",
+    coverUrl: placeholderCoverForSlug("rnb-late-night-92-amin"),
     isFeatured: true,
     saleCount: 7
   }),
@@ -71,7 +72,7 @@ export const mockBeats: Beat[] = [
     mood: ["street", "cold"],
     tags: ["drill", "slide bass", "thai"],
     durationSec: 156,
-    coverUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=900&auto=format&fit=crop",
+    coverUrl: placeholderCoverForSlug("drill-bangkok-144-dmin"),
     isFeatured: false,
     saleCount: 19
   }),
@@ -86,9 +87,99 @@ export const mockBeats: Beat[] = [
     mood: ["nostalgic", "warm"],
     tags: ["boom bap", "sample", "cypher"],
     durationSec: 174,
-    coverUrl: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
+    coverUrl: placeholderCoverForSlug("boom-bap-sunset-86-fmin"),
     isFeatured: false,
     saleCount: 5
+  }),
+  makeBeat({
+    id: "beat-005",
+    slug: "phonk-afterhours-138-gmin",
+    title: "Afterhours Phonk",
+    description: "Phonk bell พร้อม cowbell และ Memphis vibe เหมาะทำซ้อตไทยสายเมาโซตโครติก",
+    bpm: 138,
+    key: "G minor",
+    genre: "trap",
+    mood: ["phonk", "noir"],
+    tags: ["cowbell", "memphis", "phonk"],
+    durationSec: 162,
+    coverUrl: placeholderCoverForSlug("phonk-afterhours-138-gmin"),
+    isFeatured: true,
+    saleCount: 21
+  }),
+  makeBeat({
+    id: "beat-006",
+    slug: "pluggnb-clouds-150-emaj",
+    title: "Skyline Pluggnb",
+    description: "Pluggnb airy chords พื้นที่สำหรับเมโลดี้สายโคโยตี้และโฟลว์ลอย",
+    bpm: 150,
+    key: "E major",
+    genre: "rnb",
+    mood: ["dreamy", "sparkly"],
+    tags: ["pluggnb", "melodic"],
+    durationSec: 178,
+    coverUrl: placeholderCoverForSlug("pluggnb-clouds-150-emaj"),
+    isFeatured: false,
+    saleCount: 9
+  }),
+  makeBeat({
+    id: "beat-007",
+    slug: "club-thai-pop-126-amaj",
+    title: "Bangkok Flood Lights",
+    description: "โปรดักชันโทนป็อปไทยผสมแทรป เบสชัดและพื้นที่ร้อง chorus",
+    bpm: 126,
+    key: "A major",
+    genre: "hiphop",
+    mood: ["bright", "club"],
+    tags: ["thai pop", "club", "hook"],
+    durationSec: 200,
+    coverUrl: placeholderCoverForSlug("club-thai-pop-126-amaj"),
+    isFeatured: false,
+    saleCount: 14
+  }),
+  makeBeat({
+    id: "beat-008",
+    slug: "ghost-drill-148-fsharpmin",
+    title: "Ghost Alley",
+    description: "Drill เหมือนหลุดจากถนนตีบมุดใต้ไฟถนนขาวนวล",
+    bpm: 148,
+    key: "F# minor",
+    genre: "drill",
+    mood: ["sinister", "fast"],
+    tags: ["ghost", "slide"],
+    durationSec: 151,
+    coverUrl: placeholderCoverForSlug("ghost-drill-148-fsharpmin"),
+    isFeatured: false,
+    saleCount: 16
+  }),
+  makeBeat({
+    id: "beat-009",
+    slug: "smoke-trap-134-bmin",
+    title: "Smoke Signals",
+    description: "Trap hi-hat สามชั้นพร้อม sub low ที่พุ่งชัดในลำโพงรถยนต์",
+    bpm: 134,
+    key: "B minor",
+    genre: "trap",
+    mood: ["heavy", "carti-ish"],
+    tags: ["trap", "bounce"],
+    durationSec: 169,
+    coverUrl: placeholderCoverForSlug("smoke-trap-134-bmin"),
+    isFeatured: false,
+    saleCount: 28
+  }),
+  makeBeat({
+    id: "beat-010",
+    slug: "lofi-story-78-dmaj",
+    title: "Notebook Tape",
+    description: "Lo-fi boom bap เบา ๆ สำหรับ storytelling และโฟลว์เปิดใจ",
+    bpm: 78,
+    key: "D major",
+    genre: "hiphop",
+    mood: ["lofi", "warm"],
+    tags: ["lofi", "talkbox"],
+    durationSec: 205,
+    coverUrl: placeholderCoverForSlug("lofi-story-78-dmaj"),
+    isFeatured: false,
+    saleCount: 4
   })
 ];
 

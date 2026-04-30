@@ -4,8 +4,13 @@
 
 ## ไฟล์ในโฟลเดอร์นี้
 
-- `schema.sql` — โครงสร้างตาราง, triggers, RLS policies, views
+- `schema.sql` — โครงสร้างตาราง, triggers, RLS policies, views (**แหล่งความจริงสำหรับ schema** เวลาใช้ Dashboard)
 - `seed.sql` — ข้อมูลตัวอย่างสำหรับ dev/test (ห้ามใช้ใน production)
+
+โฟลเดอร์ `supabase/` (จาก `supabase init`) ใช้กับ **ตัวเลือก B**:
+
+- `supabase/migrations/20260430120000_initial_schema.sql` — สร้างจาก `database/schema.sql` ผ่าน `npm run db:sync-schema-migration` (อย่าแก้มือใน migration ถ้ายังใช้ workflow นี้)
+- `supabase/config.toml` — ตั้ง `db.seed.sql_paths` ให้ชี้ไปที่ `../database/seed.sql` เพื่อไม่ต้องคัดลอก seed ซ้ำ
 
 ## วิธีใช้กับ Supabase
 
@@ -15,19 +20,134 @@
 3. (ถ้าต้องการ test data) Copy `seed.sql` วางและรัน
 
 ### ตัวเลือก B — ผ่าน Supabase CLI (แนะนำสำหรับ team)
+
+โปรเจกต์นี้มีโฟลเดอร์ `supabase/` แล้ว และ migration เริ่มต้นชื่อ `supabase/migrations/20260430120000_initial_schema.sql` (สร้างจาก `database/schema.sql` ผ่านสคริปต์ sync)
+
+#### สิ่งที่ต้องมี
+
+| สิ่งที่ต้องมี | ใช้เมื่อไหร่ |
+|--------------|-------------|
+| Node.js + `npm install` ใน repo | เสมอ — CLI อยู่ใน `devDependency` |
+| `npx supabase ...` หรือ `npm run db:*` | เสมอ — **อย่าพึ่งพา**คำสั่ง `supabase` แบบ global ถ้ายังไม่ได้ติดตั้ง CLI ลง PATH |
+| [Docker Desktop](https://docs.docker.com/desktop/) (เปิดให้รันอยู่) | เฉพาะ **`db:start`** / **`db:reset`** (local stack) — **`db push`** / **`migration repair`** ไป remote **ไม่ต้องใช้ Docker** |
+
+#### หา Project Reference (`--project-ref`)
+
+- เปิดโปรเจกต์ใน [Supabase Dashboard](https://supabase.com/dashboard) → **Project Settings** → **General** → **Reference ID**
+- หรือดูจาก URL: `https://supabase.com/dashboard/project/<REFERENCE_ID>/...`
+- **ไม่ใช่** Organization slug (ชื่อ slug ขององค์กรเป็นคนละค่ากับ Reference ID ของโปรเจกต์)
+
+#### ขั้นตอนครั้งแรก (เชื่อม repo กับโปรเจกต์บนคลาวด์)
+
+รันที่รากโปรเจกต์ (`DevProjectWebBeat`):
+
 ```bash
-# ติดตั้ง CLI
-npm install -g supabase
-
-# Init project
-supabase init
-
-# วาง schema.sql ใน supabase/migrations/0001_initial_schema.sql
-# วาง seed.sql  ใน supabase/seed.sql
-
-# Push to remote
-supabase db push
+npm install
+npx supabase login
+npx supabase link --project-ref <YOUR_PROJECT_REF>
 ```
+
+CLI จะถามรหัสผ่าน database (ได้จาก Dashboard → **Project Settings** → **Database** → database password) เมื่อจำเป็น
+
+**ตรวจว่า link ถูกโปรเจกต์:** ใน Dashboard โปรเจกต์เดียวกัน เปิด SQL Editor แล้วรัน:
+
+```sql
+select tablename from pg_tables where schemaname = 'public' order by tablename;
+```
+
+ถ้าได้ 0 แถว = `public` ยังว่าง — ไปขั้นตอน **โปรเจกต์ว่าง** ด้านล่าง
+
+---
+
+#### กรณีที่ 1: Remote ว่างจริง (ยังไม่เคยรัน `schema.sql`)
+
+```bash
+npm run db:push
+```
+
+ยืนยัน prompt แล้วรอให้ migration แรกรันจบ — จากนั้นควรเห็นตารางใน **Database → Tables** (schema `public`)
+
+ถ้าต้องการข้อมูลตัวอย่างบนคลาวด์ (เฉพาะ env ที่ปลอดภัย):
+
+- เปิด **SQL Editor** แล้วรันเนื้อหา **`database/seed.sql`**  
+  (**`db push` ไม่ส่ง seed ขึ้น remote อัตโนมัติ**)
+
+---
+
+#### กรณีที่ 2: Remote เคยมี schema จาก Dashboard แล้ว (รัน `database/schema.sql` ไปแล้ว)
+
+ครั้งแรกที่ `npm run db:push` อาจชน error เช่น `type "beat_genre" already exists` เพราะของอยู่ใน DB แล้ว แต่ประวัติ migration บนคลาวด์ยังไม่บันทึกว่าไฟล์แรกผ่าน — ให้ **baseline** (บอกว่า migration รุ่นนี้ผ่านแล้วโดยไม่รัน SQL ซ้ำ):
+
+```bash
+npx supabase migration repair 20260430120000 --status applied --linked --yes
+npm run db:push
+```
+
+ควรเห็นข้อความประมาณ **`Remote database is up to date.`**
+
+---
+
+#### กรณีที่ 3: `repair --applied` ไปแล้ว แต่จริงๆ DB ว่าง (เห็น 0 tables / query `pg_tables` ได้ 0 แถว)
+
+เกิดได้เมื่อประวัติ migration บอกว่า applied แต่ยังไม่เคยรัน SQL สร้างตารางบนโปรเจกต์นั้น — **`db push` จะขึ้น up to date โดยไม่สร้างอะไร**
+
+แก้โดยย้อนสถานะ migration แรกแล้ว push ใหม่:
+
+```bash
+npx supabase migration repair 20260430120000 --status reverted --linked --yes
+npm run db:push
+```
+
+ถ้ายังชน error เรื่อง type/table มีอยู่แล้ว — ให้ตรวจอีกครั้งว่า **Reference ID** ตรงกับโปรเจกต์ที่เปิดใน Dashboard หรือไม่
+
+ทางเลือกเทียบเท่า: รัน **`database/schema.sql`** ใน SQL Editor ครั้งหนึ่ง แล้วค่อย `migration repair ... --status applied` ให้ประวัติกับความเป็นจริงตรงกัน
+
+---
+
+#### เมื่อแก้ schema ในอนาคต
+
+1. แก้ **`database/schema.sql`** (แหล่งความจริงสำหรับทีมที่ยังใช้ Option A)
+2. ถ้าต้องการให้ไฟล์ migration เริ่มต้นตรงกับ schema อีกครั้ง: `npm run db:sync-schema-migration`  
+   - **หมายเหตุ:** บน remote ถ้า migration `20260430120000...` **ถูกบันทึกว่า applied แล้ว** CLI **จะไม่รันไฟล์นั้นซ้ำ** — การแก้ schema ถัดไปควรเป็น **migration ใหม่**:
+3. สร้าง migration ใหม่:
+
+```bash
+npx supabase migration new ชื่อที่อธิบายการเปลี่ยนแปลง
+```
+
+แก้ไฟล์ `.sql` ที่สร้างขึ้น (หรือใช้ `npm run db:diff` เมื่อมี local DB) แล้ว:
+
+```bash
+npm run db:push
+```
+
+เอกสารเพิ่ม: [Supabase CLI — Managing environments & migrations](https://supabase.com/docs/guides/cli/managing-environments)
+
+---
+
+#### Local: Docker + seed อัตโนมัติ
+
+```bash
+npm run db:start    # ครั้งแรกดึง image อาจใช้เวลานาน
+npm run db:reset    # รัน migrations แล้วรัน database/seed.sql ตาม config.toml
+npm run db:stop
+```
+
+ถ้าขึ้นว่าเชื่อม Docker ไม่ได้ — เปิด **Docker Desktop** บน Windows ให้รันอยู่ (บางเครื่องต้องรัน terminal แบบ Administrator)
+
+---
+
+#### คำสั่งสรุป (จาก `package.json`)
+
+| คำสั่ง | ความหมาย |
+|--------|----------|
+| `npm run db:sync-schema-migration` | คัดลอก `database/schema.sql` → `supabase/migrations/20260430120000_initial_schema.sql` |
+| `npm run db:link` | `supabase link` (เชื่อมโปรเจกต์) |
+| `npm run db:push` | ส่ง migration ที่ยังไม่ apply ขึ้น remote ที่ link ไว้ |
+| `npm run db:diff` | เปรียบเทียบ schema (มักใช้กับ local) |
+| `npm run db:start` / `db:stop` / `db:reset` | Stack ฐานข้อมูล local (ต้องมี Docker) |
+
+**สรุปสำคัญ:** `seed.sql` **ไม่**ถูก `db push` ขึ้น production — ใช้กับ **`db reset` (local)** หรือรันด้วยมือใน SQL Editor เมื่อต้องการข้อมูลทดสอบบนคลาวด์
 
 ---
 
@@ -187,15 +307,8 @@ where day >= current_date - interval '30 days';
 
 ## Migration Strategy
 
-ระยะแรกสามารถใช้ schema.sql ทั้งไฟล์เดียวก่อน เมื่อโตขึ้นค่อยแยกเป็น migrations:
-
-```
-supabase/migrations/
-  0001_initial_schema.sql       ← ส่วนของไฟล์นี้
-  0002_add_wishlist.sql
-  0003_add_subscription_tier.sql
-  ...
-```
+- **แก้ `database/schema.sql`** เป็นหลัก แล้วรัน `npm run db:sync-schema-migration` เพื่ออัปเดตไฟล์ migration เริ่มต้น (`20260430120000_initial_schema.sql`) ให้ตรงกับ Option B
+- เมื่อโปรเจกต์โตแล้ว แนะนำแยก migration ใหม่ใน `supabase/migrations/` ต่อท้าย timestamp แทนการแก้ไฟล์ initial ซ้ำ (เช่น `20260515120000_add_wishlist.sql`)
 
 ---
 

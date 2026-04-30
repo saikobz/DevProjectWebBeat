@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AnalyticsScripts } from "@/components/analytics/analytics-scripts";
 import { Nav } from "@/components/layout/nav";
 import { Footer } from "@/components/layout/footer";
 import { PersistentPlayer } from "@/components/player/persistent-player";
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <main className="mx-auto min-h-[calc(100vh-160px)] max-w-6xl scroll-pb-32 px-4 py-10 pb-52 sm:pb-44">{children}</main>
         <Footer />
         <PersistentPlayer />
+        <AnalyticsScripts />
       </body>
     </html>
   );

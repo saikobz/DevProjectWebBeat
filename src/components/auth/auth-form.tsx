@@ -18,7 +18,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const isRegister = mode === "register";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -26,6 +28,12 @@ export function AuthForm({ mode }: AuthFormProps) {
     setIsSubmitting(true);
     setError(null);
     setMessage(null);
+
+    if (isRegister && !privacyConsent) {
+      setError("กรุณายอมรับนโยบายความเป็นส่วนตัวและข้อกำหนดการใช้บริการก่อนสมัครสมาชิก");
+      setIsSubmitting(false);
+      return;
+    }
 
     const supabase = createClient();
     if (!supabase) {
@@ -62,6 +70,39 @@ export function AuthForm({ mode }: AuthFormProps) {
     router.push(isRegister ? "/account" : "/library");
   }
 
+  async function handleGoogleSignIn() {
+    setError(null);
+    setMessage(null);
+
+    if (isRegister && !privacyConsent) {
+      setError("กรุณายอมรับข้อกำหนดและนโยบายความเป็นส่วนตัวก่อนเข้าด้วย Google");
+      return;
+    }
+
+    const supabase = createClient();
+    if (!supabase) {
+      setError("ยังไม่ได้ตั้งค่า Supabase env ใน .env.local");
+      return;
+    }
+
+    setIsOAuthLoading(true);
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const siteBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || origin;
+    const nextPath = encodeURIComponent(isRegister ? "/account" : "/library");
+
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${siteBase}/auth/callback?next=${nextPath}`
+      }
+    });
+
+    if (oauthError) {
+      setError(oauthError.message);
+      setIsOAuthLoading(false);
+    }
+  }
+
   return (
     <Card className="mx-auto max-w-md">
       <h1 className="text-3xl font-black text-white">{isRegister ? "Register" : "Login"}</h1>
@@ -95,12 +136,50 @@ export function AuthForm({ mode }: AuthFormProps) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+        {isRegister ? (
+          <label className="flex cursor-pointer gap-3 text-sm leading-snug text-zinc-400">
+            <input
+              checked={privacyConsent}
+              className="mt-1 size-4 shrink-0 rounded border-zinc-600 bg-zinc-950 text-lime-300 focus-visible:ring-2 focus-visible:ring-lime-300"
+              onChange={(event) => setPrivacyConsent(event.target.checked)}
+              type="checkbox"
+            />
+            <span>
+              ข้าพเจ้ายอมรับ{" "}
+              <Link className="font-semibold text-lime-300 underline-offset-4 hover:underline" href="/terms">
+                ข้อกำหนดการใช้บริการ
+              </Link>{" "}
+              และ{" "}
+              <Link className="font-semibold text-lime-300 underline-offset-4 hover:underline" href="/privacy">
+                นโยบายความเป็นส่วนตัว
+              </Link>
+            </span>
+          </label>
+        ) : null}
         {error ? <p className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
         {message ? <p className="rounded-2xl border border-lime-300/40 bg-lime-300/10 p-3 text-sm text-lime-100">{message}</p> : null}
-        <Button className="w-full" disabled={isSubmitting}>
+        <Button className="w-full" disabled={isSubmitting || isOAuthLoading}>
           {isSubmitting ? "กำลังดำเนินการ..." : isRegister ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}
         </Button>
       </form>
+
+      <div className="relative my-7">
+        <div aria-hidden className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-zinc-800" />
+        </div>
+        <p className="relative mx-auto w-fit bg-zinc-950 px-3 text-center text-xs uppercase tracking-wider text-zinc-500">หรือ</p>
+      </div>
+
+      <Button
+        className="w-full border border-zinc-600"
+        disabled={isSubmitting || isOAuthLoading}
+        onClick={() => void handleGoogleSignIn()}
+        type="button"
+        variant="secondary"
+      >
+        {isOAuthLoading ? "กำลังเปิด Google..." : "ดำเนินการต่อด้วย Google"}
+      </Button>
+
       <p className="mt-5 text-center text-sm text-zinc-400">
         {isRegister ? "มีบัญชีแล้ว?" : "ยังไม่มีบัญชี?"}{" "}
         <Link className="font-semibold text-lime-300" href={isRegister ? "/login" : "/register"}>

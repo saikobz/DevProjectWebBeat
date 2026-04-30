@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+import { resolveBeatCoverUrl } from "@/lib/data/beat-cover";
 import { mockBeats } from "@/lib/data/mock-beats";
 import { getLicenseTierConfig } from "@/lib/license/terms";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -34,6 +36,10 @@ type BeatLicenseRow = {
   is_available: boolean;
 };
 
+type BeatRowWithLicenses = BeatRow & {
+  beat_licenses: BeatLicenseRow[] | null;
+};
+
 function mapLicense(row: BeatLicenseRow): BeatLicense {
   const config = getLicenseTierConfig(row.tier);
   const terms = row.terms ?? config.terms;
@@ -48,6 +54,12 @@ function mapLicense(row: BeatLicenseRow): BeatLicense {
     terms,
     isAvailable: row.is_available
   };
+}
+
+function mapBeatRowWithLicenses(row: BeatRowWithLicenses): Beat {
+  const { beat_licenses: licRows, ...beatRow } = row;
+  const licenses = (licRows ?? []).map(mapLicense);
+  return mapBeat(beatRow as BeatRow, licenses);
 }
 
 function mapBeat(row: BeatRow, licenses: BeatLicense[]): Beat {
@@ -67,7 +79,7 @@ function mapBeat(row: BeatRow, licenses: BeatLicense[]): Beat {
     stemsPath: row.stems_path ?? undefined,
     waveformData: row.waveform_data ?? undefined,
     status: row.status,
-    coverUrl: row.cover_url ?? undefined,
+    coverUrl: resolveBeatCoverUrl(row.cover_url, row.slug),
     isFeatured: row.is_featured,
     saleCount: row.sale_count,
     publishedAt: row.published_at ?? "",
@@ -75,46 +87,59 @@ function mapBeat(row: BeatRow, licenses: BeatLicense[]): Beat {
   };
 }
 
-async function getLicensesByBeatIds(beatIds: string[]) {
-  const supabase = createPublicClient();
-  if (!supabase || beatIds.length === 0) return new Map<string, BeatLicense[]>();
+const publishedBeatsSelect = [
+  "id, slug, title, description, bpm, key, genre, mood, tags, duration_sec, preview_url, wav_path, stems_path, waveform_data, status, cover_url, is_featured, sale_count, published_at",
+  "beat_licenses(id, beat_id, tier, price_thb, terms, is_available)"
+].join(",");
 
-  const { data, error } = await supabase
-    .from("beat_licenses")
-    .select("id, beat_id, tier, price_thb, terms, is_available")
-    .in("beat_id", beatIds)
-    .eq("is_available", true);
-
-  if (error || !data) return new Map<string, BeatLicense[]>();
-
-  return (data as BeatLicenseRow[]).reduce((map, row) => {
-    const current = map.get(row.beat_id) ?? [];
-    map.set(row.beat_id, [...current, mapLicense(row)]);
-    return map;
-  }, new Map<string, BeatLicense[]>());
+function publishedMockBeats(): Beat[] {
+  return mockBeats.filter((beat) => beat.status === "published");
 }
 
-export async function getPublishedBeats() {
+/** PostgREST / Supabase: โปรเจกต์ยังไม่รัน schema หรือตารางยังไม่อยู่ใน schema cache — ไม่ควร throw ผ่าน unstable_cache (จะทำให้ Next log stack ซ้ำ) */
+function isMissingBeatsRelationError(error: { message?: string; code?: string } | null | undefined): boolean {
+  if (!error?.message && !error?.code) return false;
+  const msg = error.message ?? "";
+  if (error.code === "PGRST205") return true;
+  return msg.includes("Could not find the table") && msg.includes("beats");
+}
+
+async function fetchPublishedBeatsDbCachedPayload(): Promise<Beat[]> {
   const supabase = createPublicClient();
-  if (!supabase) {
-    return mockBeats.filter((beat) => beat.status === "published");
-  }
+  if (!supabase) throw new Error("missing supabase");
 
   const { data, error } = await supabase
     .from("beats")
-    .select(
-      "id, slug, title, description, bpm, key, genre, mood, tags, duration_sec, preview_url, wav_path, stems_path, waveform_data, status, cover_url, is_featured, sale_count, published_at"
-    )
+    .select(publishedBeatsSelect)
     .eq("status", "published")
     .order("published_at", { ascending: false });
 
   if (error || !data) {
-    return mockBeats.filter((beat) => beat.status === "published");
+    if (isMissingBeatsRelationError(error)) {
+      return publishedMockBeats();
+    }
+    throw new Error(error?.message ?? "beats fetch failed");
   }
 
-  const rows = data as BeatRow[];
-  const licensesByBeatId = await getLicensesByBeatIds(rows.map((row) => row.id));
-  return rows.map((row) => mapBeat(row, licensesByBeatId.get(row.id) ?? []));
+  const rows = data as unknown as BeatRowWithLicenses[];
+  return rows.map(mapBeatRowWithLicenses);
+}
+
+const getCachedPublishedBeatsDb = unstable_cache(fetchPublishedBeatsDbCachedPayload, ["published-beats-with-licenses"], {
+  revalidate: 60
+});
+
+export async function getPublishedBeats() {
+  const supabase = createPublicClient();
+  if (!supabase) {
+    return publishedMockBeats();
+  }
+
+  try {
+    return await getCachedPublishedBeatsDb();
+  } catch {
+    return publishedMockBeats();
+  }
 }
 
 export async function getBeatBySlug(slug: string) {
@@ -123,18 +148,14 @@ export async function getBeatBySlug(slug: string) {
 
   const { data, error } = await supabase
     .from("beats")
-    .select(
-      "id, slug, title, description, bpm, key, genre, mood, tags, duration_sec, preview_url, wav_path, stems_path, waveform_data, status, cover_url, is_featured, sale_count, published_at"
-    )
+    .select(publishedBeatsSelect)
     .eq("slug", slug)
     .eq("status", "published")
-    .single();
+    .maybeSingle();
 
   if (error || !data) return mockBeats.find((beat) => beat.slug === slug);
 
-  const row = data as BeatRow;
-  const licensesByBeatId = await getLicensesByBeatIds([row.id]);
-  return mapBeat(row, licensesByBeatId.get(row.id) ?? []);
+  return mapBeatRowWithLicenses(data as unknown as BeatRowWithLicenses);
 }
 
 export async function getBeatById(id: string) {

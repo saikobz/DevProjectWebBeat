@@ -1,7 +1,7 @@
 # PRD & Roadmap — เว็บขายบีท (Thai Beat Marketplace)
 
 **Version:** 1.0
-**Last updated:** 2026-04-29
+**Last updated:** 2026-04-30
 **Owner:** Padon
 
 ---
@@ -411,61 +411,70 @@
 ## 13. Roadmap (ละเอียด)
 
 ### Phase 0 — Pre-Build (Week 1–2)
-- [ ] ตั้งชื่อแบรนด์ + จดโดเมน + ออกแบบโลโก้
-- [ ] เปิดบัญชี: Vercel, Supabase, Cloudflare, Omise, Resend, GitHub
-- [ ] ร่าง License Agreement ทั้ง 4 tier
-- [ ] เขียน Terms of Service + Privacy Policy
-- [ ] เตรียม voice tag audio file
-- [ ] เตรียมบีทอย่างน้อย 10 ตัวพร้อม metadata
+
+สถานะอิงจาก repo ณ `WebBeatTH` / README — รายการที่ทำนอก repo (โดเมนจริง, บัญชี production) ให้ทีมยืนยันแยก
+
+- [x] ตั้งชื่อแบรนด์ในโปรเจกต์ (WebBeatTH)
+- [ ] จดโดเมน production + โลโก้จริง (ไม่มี asset / การันตีการจดใน repo)
+- [ ] เปิดบัญชีและผูก production: Vercel, Supabase, Cloudflare, Omise, Resend (มี `.env.example` และโค้ด integrate — สถานะบัญชีจริงอยู่นอก repo)
+- [x] ร่าง License Agreement ทั้ง 4 tier (`licenses/*.md` — README ระบุว่าเป็น draft ต้องให้ทนายตรวจก่อนใช้จริง)
+- [ ] เขียน Terms of Service + Privacy Policy เป็นหน้าเว็บ (ยังไม่มี route ใน `src/app`)
+- [ ] เตรียม voice tag audio file และ FFmpeg pipeline (ยังไม่มีโฟลเดอร์ voice tag / ไม่มี FFmpeg ในโค้ด — admin ใส่ `previewUrl` เป็น URL ที่มีอยู่แล้ว)
+- [ ] เตรียมบีทอย่างน้อย 10 ตัวพร้อม metadata (`database/seed.sql` มีตัวอย่าง 2 ตัว)
 
 ### Phase 1 — MVP Build (Week 3–6)
 
 **Week 3:**
-- Setup Next.js project + Tailwind + Supabase
-- Auth (email + Google)
-- Database schema migration
+- [x] Setup Next.js project + Tailwind + Supabase (clients + `database/schema.sql`)
+- [x] Auth อีเมล + รหัสผ่าน (Supabase — `AuthForm`)
+- [ ] Auth Google OAuth (ยังไม่มีใน UI — PRD เดิมระบุ Google)
+- [x] Database schema migration (`database/schema.sql` + seed)
 
 **Week 4:**
-- Beat browse page + filter/search
-- Beat detail page + waveform player
-- Persistent audio player
-- Admin upload flow + FFmpeg processing
+- [x] Beat browse page + filter/search พื้นฐาน (genre + คำค้น — BPM/key/sort เต็มรูปแบบยังเป็นขั้นถัดไปตามข้อความในหน้า beats)
+- [ ] Beat detail waveform แบบ wavesurfer.js (มี dependency ใน `package.json` แต่หน้า detail ใช้ `<audio>` + progress bar)
+- [x] Persistent audio player (sticky bar + เล่น/หยุด/next + queue)
+- [ ] Admin upload + FFmpeg processing + voice tag อัตโนมัติ (มีฟอร์ม/API สร้างบีทจาก metadata + URL — ไม่มีประมวลผลไฟล์บนเซิร์ฟเวอร์)
 
 **Week 5:**
-- Cart + checkout flow
-- Omise integration (PromptPay + card)
-- License PDF generation
-- Email delivery (Resend)
+- [x] Cart + checkout flow (รองรับ mock เมื่อยังไม่ตั้งค่า integration)
+- [x] Omise integration พื้นฐาน (`create-charge` + webhook — ต้องมีคีย์และเปิดใช้จริง)
+- [x] License PDF generation พื้นฐาน (`license-pdf.ts` — draft/minimal ตาม README)
+- [x] Email delivery (Resend — `send.ts`, ต้องมี API key)
 
 **Week 6:**
-- My Library + Order history
-- Admin sales dashboard
-- SEO basics (meta, sitemap, robots.txt)
-- Bug fix + polish
+- [x] My Library + Order history (routes + UI)
+- [x] Admin sales dashboard พื้นฐาน (`/admin` + stats API — fallback mock เมื่อไม่มี Supabase service role)
+- [x] SEO basics (`src/app/sitemap.ts`, `src/app/robots.ts`, meta หน้า beat)
+- [ ] QA / polish ก่อน soft launch (งานต่อเนื่อง — ยังไม่ถือว่าปิดเฟสบนโปรดักชัน)
 
 ### Phase 2 — Soft Launch (Week 7)
-- Upload บีท 20–30 ตัว
-- เปิดเว็บแบบ unannounced กับเพื่อน 5–10 คน
-- เก็บ feedback + แก้ bug
-- Setup analytics (GA4, Pixel, Sentry)
+
+- [ ] Upload บีท 20–30 ตัว
+- [ ] เปิดเว็บแบบ unannounced กับเพื่อน 5–10 คน
+- [ ] เก็บ feedback + แก้ bug
+- [ ] Setup analytics (GA4, Pixel, Sentry)
 
 ### Phase 3 — Public Launch (Week 8)
-- ประกาศใน Facebook/Instagram/TikTok
-- ปล่อย free beat ตัวแรก + ลิงก์ลงเพจ
-- ส่งบีทให้ micro-influencer ลองใช้
-- Run promotion: ส่วนลด 20% สัปดาห์แรก
+
+- [ ] ประกาศใน Facebook/Instagram/TikTok
+- [ ] ปล่อย free beat ตัวแรก + ลิงก์ลงเพจ
+- [ ] ส่งบีทให้ micro-influencer ลองใช้
+- [ ] Run promotion: ส่วนลด 20% สัปดาห์แรก
 
 ### Phase 4 — Growth (Month 3–6)
-- เพิ่ม coupon system
-- เพิ่ม wishlist
-- เริ่ม Facebook/Google Ads งบเล็ก
-- ปล่อยบีทใหม่อย่างน้อย 4 ตัว/เดือน
-- YouTube channel grow
+
+- [ ] เพิ่ม coupon system
+- [ ] เพิ่ม wishlist
+- [ ] เริ่ม Facebook/Google Ads งบเล็ก
+- [ ] ปล่อยบีทใหม่อย่างน้อย 4 ตัว/เดือน
+- [ ] YouTube channel grow
 
 ### Phase 5 — Scale (Month 7–12)
-- เพิ่ม subscription tier
-- พิจารณารับโปรดิวเซอร์อื่นเข้ามา (multi-vendor)
-- เพิ่ม mobile app (ถ้ายอดคุ้ม)
+
+- [ ] เพิ่ม subscription tier
+- [ ] พิจารณารับโปรดิวเซอร์อื่นเข้ามา (multi-vendor)
+- [ ] เพิ่ม mobile app (ถ้ายอดคุ้ม)
 
 ---
 

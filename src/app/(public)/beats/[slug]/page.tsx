@@ -3,6 +3,7 @@ import { getBeatBySlug, getPublishedBeats } from "@/lib/data/beats";
 import { formatDuration } from "@/lib/format";
 import { BeatGrid } from "@/components/beats/beat-grid";
 import { BeatPreviewCard } from "@/components/beats/beat-preview-card";
+import { BeatWaveform } from "@/components/beats/beat-waveform";
 import { LicenseSelector } from "@/components/license/license-selector";
 import { Card } from "@/components/ui/card";
 
@@ -46,6 +47,7 @@ export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
             <p className="mt-4 max-w-2xl text-zinc-300">{beat.description}</p>
           </div>
           <BeatPreviewCard beat={beat} queue={publishedBeats} />
+          <BeatWaveform beat={beat} />
           <div className="grid gap-3 sm:grid-cols-4">
             <Card><p className="text-sm text-zinc-500">BPM</p><p className="mt-1 font-bold text-white">{beat.bpm}</p></Card>
             <Card><p className="text-sm text-zinc-500">Key</p><p className="mt-1 font-bold text-white">{beat.key}</p></Card>
