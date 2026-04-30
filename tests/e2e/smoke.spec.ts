@@ -23,6 +23,7 @@ test.describe("smoke", () => {
   test("beat detail พร้อม waveform section", async ({ page }) => {
     await page.goto("/beats/dark-trap-140-cmin");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByText(/waveform/i)).toBeVisible();
+    await expect(page.getByTestId("beat-waveform")).toBeVisible();
+    await expect(page.getByLabel(/waveform preview/i)).toBeVisible();
   });
 });

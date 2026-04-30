@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { formatTHB } from "@/lib/format";
 import { LICENSE_ORDER } from "@/lib/constants";
 import { getLicenseTierConfig } from "@/lib/license/terms";
+import { trackAddToCart } from "@/lib/analytics/gtag";
 import { useCartStore } from "@/stores/cart-store";
 import type { Beat, BeatLicense } from "@/types";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -67,6 +68,7 @@ export function LicenseSelector({ beat }: LicenseSelectorProps) {
         className="w-full"
         onClick={() => {
           addItem(beat, selected);
+          trackAddToCart(beat, selected);
           setAddedLicenseId(selected.id);
         }}
       >

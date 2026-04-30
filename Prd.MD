@@ -387,7 +387,7 @@
 
 ### PDPA (Personal Data Protection Act)
 - ขอ consent ตอนสมัครสมาชิก/newsletter
-- มีหน้า Privacy Policy ภาษาไทย
+- มีหน้า Privacy Policy ภาษาไทยแล้วในเว็บ (`/privacy`) แต่ยังเป็น draft และต้องให้ทนายตรวจ
 - ลบข้อมูลได้ตามคำขอของผู้ใช้
 - เก็บ data ในไทย/region ใกล้เคียง (Supabase Singapore region)
 
@@ -418,8 +418,8 @@
 - [ ] จดโดเมน production + โลโก้จริง (ไม่มี asset / การันตีการจดใน repo)
 - [ ] เปิดบัญชีและผูก production: Vercel, Supabase, Cloudflare, Omise, Resend (มี `.env.example` และโค้ด integrate — สถานะบัญชีจริงอยู่นอก repo)
 - [x] ร่าง License Agreement ทั้ง 4 tier (`licenses/*.md` — README ระบุว่าเป็น draft ต้องให้ทนายตรวจก่อนใช้จริง)
-- [ ] เขียน Terms of Service + Privacy Policy เป็นหน้าเว็บ (ยังไม่มี route ใน `src/app`)
-- [ ] เตรียม voice tag audio file และ FFmpeg pipeline (ยังไม่มีโฟลเดอร์ voice tag / ไม่มี FFmpeg ในโค้ด — admin ใส่ `previewUrl` เป็น URL ที่มีอยู่แล้ว)
+- [x] มีหน้า Terms of Service + Privacy Policy แล้ว (`src/app/(public)/terms`, `src/app/(public)/privacy`) แต่เนื้อหายังเป็น draft และต้องให้ทนายตรวจ/เติมข้อมูลติดต่อจริงก่อน production
+- [ ] เตรียม voice tag audio file และ FFmpeg pipeline (มี preflight ในหน้า admin upload แล้ว + env สำหรับ external worker แต่ยังไม่มี worker/process จริงใน repo)
 - [ ] เตรียมบีทอย่างน้อย 10 ตัวพร้อม metadata (`database/seed.sql` มีตัวอย่าง 2 ตัว)
 
 ### Phase 1 — MVP Build (Week 3–6)
@@ -427,14 +427,14 @@
 **Week 3:**
 - [x] Setup Next.js project + Tailwind + Supabase (clients + `database/schema.sql`)
 - [x] Auth อีเมล + รหัสผ่าน (Supabase — `AuthForm`)
-- [ ] Auth Google OAuth (ยังไม่มีใน UI — PRD เดิมระบุ Google)
+- [x] Auth Google OAuth (มีปุ่มใน `AuthForm` + callback route แล้ว แต่ production ต้องเปิด provider/redirect URL ใน Supabase)
 - [x] Database schema migration (`database/schema.sql` + seed)
 
 **Week 4:**
-- [x] Beat browse page + filter/search พื้นฐาน (genre + คำค้น — BPM/key/sort เต็มรูปแบบยังเป็นขั้นถัดไปตามข้อความในหน้า beats)
-- [ ] Beat detail waveform แบบ wavesurfer.js (มี dependency ใน `package.json` แต่หน้า detail ใช้ `<audio>` + progress bar)
+- [x] Beat browse page + filter/search เต็มรูปแบบ (genre + คำค้น + BPM + key + sort)
+- [x] Beat detail waveform แบบ wavesurfer.js (sync กับ persistent player และรองรับ seek บนหน้า detail)
 - [x] Persistent audio player (sticky bar + เล่น/หยุด/next + queue)
-- [ ] Admin upload + FFmpeg processing + voice tag อัตโนมัติ (มีฟอร์ม/API สร้างบีทจาก metadata + URL — ไม่มีประมวลผลไฟล์บนเซิร์ฟเวอร์)
+- [ ] Admin upload + FFmpeg processing + voice tag อัตโนมัติ (มีฟอร์มอัปโหลด R2 + pipeline preflight/expected output แล้ว แต่ยังไม่มี worker/process จริงบนเซิร์ฟเวอร์)
 
 **Week 5:**
 - [x] Cart + checkout flow (รองรับ mock เมื่อยังไม่ตั้งค่า integration)

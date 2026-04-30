@@ -16,6 +16,8 @@ export function PersistentPlayer() {
   const next = usePlayerStore((state) => state.next);
   const setVolume = usePlayerStore((state) => state.setVolume);
   const setPlaybackProgress = usePlayerStore((state) => state.setPlaybackProgress);
+  const requestedSeekSec = usePlayerStore((state) => state.requestedSeekSec);
+  const clearRequestedSeek = usePlayerStore((state) => state.clearRequestedSeek);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -52,6 +54,17 @@ export function PersistentPlayer() {
       audio.removeEventListener("loadedmetadata", syncProgress);
     };
   }, [currentBeat, setPlaybackProgress]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || requestedSeekSec === null) return;
+
+    const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : currentBeat?.durationSec ?? requestedSeekSec;
+    const nextTime = Math.min(Math.max(requestedSeekSec, 0), duration > 0 ? duration : requestedSeekSec);
+    audio.currentTime = nextTime;
+    setPlaybackProgress(nextTime, Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : duration);
+    clearRequestedSeek();
+  }, [clearRequestedSeek, currentBeat?.durationSec, requestedSeekSec, setPlaybackProgress]);
 
   if (!currentBeat) return null;
 

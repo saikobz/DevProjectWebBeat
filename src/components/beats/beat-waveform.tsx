@@ -7,10 +7,11 @@ import { usePlayerStore } from "@/stores/player-store";
 
 type BeatWaveformProps = {
   beat: Beat;
+  queue?: Beat[];
 };
 
-/** WaveSurfer visualization synced to global persistent player (muted internally — เสียงจาก player bar เท่านั้น). */
-export function BeatWaveform({ beat }: BeatWaveformProps) {
+/** WaveSurfer visualization synced to global persistent player (audio จริงยังเล่นจาก player bar ด้านล่าง). */
+export function BeatWaveform({ beat, queue }: BeatWaveformProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WaveSurfer | null>(null);
   const [wsReady, setWsReady] = useState(false);
@@ -18,6 +19,8 @@ export function BeatWaveform({ beat }: BeatWaveformProps) {
   const currentBeatId = usePlayerStore((s) => s.currentBeat?.id);
   const currentTimeSec = usePlayerStore((s) => s.currentTimeSec);
   const durationSec = usePlayerStore((s) => s.durationSec);
+  const play = usePlayerStore((s) => s.play);
+  const seekTo = usePlayerStore((s) => s.seekTo);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -32,23 +35,30 @@ export function BeatWaveform({ beat }: BeatWaveformProps) {
       cursorColor: "#d4d4d8",
       cursorWidth: 2,
       url: beat.previewUrl,
-      interact: false,
-      dragToSeek: false
+      interact: true,
+      dragToSeek: true
     });
 
     ws.setVolume(0);
     ws.setMuted(true);
 
     const unsubReady = ws.on("ready", () => setWsReady(true));
+    const unsubInteraction = ws.on("interaction", (newTime) => {
+      if (usePlayerStore.getState().currentBeat?.id !== beat.id) {
+        play(beat, queue);
+      }
+      seekTo(newTime);
+    });
     wsRef.current = ws;
 
     return () => {
       unsubReady();
+      unsubInteraction();
       ws.destroy();
       wsRef.current = null;
       setWsReady(false);
     };
-  }, [beat.id, beat.previewUrl]);
+  }, [beat, play, queue, seekTo]);
 
   useEffect(() => {
     const ws = wsRef.current;
@@ -59,10 +69,17 @@ export function BeatWaveform({ beat }: BeatWaveformProps) {
   }, [beat.id, currentBeatId, currentTimeSec, durationSec, wsReady]);
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4" data-testid="beat-waveform">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Waveform</p>
-      <div ref={containerRef} className="min-h-[96px] w-full overflow-hidden rounded-xl bg-zinc-950/50" />
-      <p className="mt-2 text-xs text-zinc-500">เล่นจากปุ่มด้านบน — แถบเล่นด้านล่างเป็นตัวขับเสียงจริง</p>
+      <div
+        ref={containerRef}
+        className="min-h-[96px] w-full overflow-hidden rounded-xl bg-zinc-950/50"
+        aria-label="Waveform preview"
+        aria-busy={!wsReady}
+      />
+      <p className="mt-2 text-xs text-zinc-500">
+        {wsReady ? "คลิกหรือ drag ที่ waveform เพื่อ seek ได้ — แถบเล่นด้านล่างยังเป็นตัวขับเสียงจริง" : "กำลังโหลด waveform..."}
+      </p>
     </div>
   );
 }

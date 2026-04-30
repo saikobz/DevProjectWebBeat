@@ -114,8 +114,10 @@ async function fetchPublishedBeatsDbCachedPayload(): Promise<Beat[]> {
     .eq("status", "published")
     .order("published_at", { ascending: false });
 
+  const missingRelation = isMissingBeatsRelationError(error);
+
   if (error || !data) {
-    if (isMissingBeatsRelationError(error)) {
+    if (missingRelation) {
       return publishedMockBeats();
     }
     throw new Error(error?.message ?? "beats fetch failed");

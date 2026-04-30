@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTHB } from "@/lib/format";
+import { trackBeginCheckout } from "@/lib/analytics/gtag";
+import { reportError } from "@/lib/monitoring/report-error";
 import { useCartStore, getCartTotal } from "@/stores/cart-store";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,39 +44,46 @@ export function CheckoutForm() {
         setIsSubmitting(true);
         setError(null);
 
-        const response = await fetch("/api/checkout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            customerName,
-            email,
-            items
-          })
-        });
+        try {
+          const response = await fetch("/api/checkout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              customerName,
+              email,
+              items
+            })
+          });
 
-        const result = (await response.json()) as {
-          error?: string;
-          order?: { id: string };
-          charge?: { authorizeUri?: string };
-        };
+          const result = (await response.json()) as {
+            error?: string;
+            order?: { id: string };
+            charge?: { authorizeUri?: string };
+          };
 
-        if (!response.ok || result.error || !result.order) {
-          setError(result.error ?? "ไม่สามารถสร้างออเดอร์ได้");
+          if (!response.ok || result.error || !result.order) {
+            setError(result.error ?? "ไม่สามารถสร้างออเดอร์ได้");
+            setIsSubmitting(false);
+            return;
+          }
+
+          trackBeginCheckout(items);
+          clear();
+          const nextUrl = result.charge?.authorizeUri ?? `/checkout/success?order=${result.order.id}`;
+
+          if (nextUrl.startsWith("http")) {
+            navigateToExternalUrl(nextUrl);
+            return;
+          }
+
+          router.push(nextUrl);
+        } catch (caughtError) {
+          reportError(caughtError, "checkout-submit", { itemCount: items.length });
+          setError("เกิดข้อผิดพลาดระหว่างสร้างออเดอร์ กรุณาลองใหม่อีกครั้ง");
           setIsSubmitting(false);
-          return;
         }
-
-        clear();
-        const nextUrl = result.charge?.authorizeUri ?? `/checkout/success?order=${result.order.id}`;
-
-        if (nextUrl.startsWith("http")) {
-          navigateToExternalUrl(nextUrl);
-          return;
-        }
-
-        router.push(nextUrl);
       }}
     >
       <Card>

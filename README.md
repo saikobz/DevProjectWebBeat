@@ -96,7 +96,7 @@ http://localhost:3000
 2. รัน `database/schema.sql`  
 3. รัน `database/seed.sql`  
 4. สร้าง user ผ่าน Supabase Auth  
-5. ตั้ง admin user ด้วยการอัปเดต `profiles.is_admin = true`
+5. ตั้ง admin user ด้วยการรัน `database/grant-admin.sql` (แก้อีเมลในไฟล์แล้วรันใน SQL Editor) หรืออัปเดต `profiles.is_admin = true` ด้วยตัวเอง
 
 **CLI (แนะนำสำหรับทีม)** — `supabase/` อยู่ใน repo แล้ว
 
@@ -105,6 +105,12 @@ npx supabase login
 npx supabase link --project-ref <YOUR_PROJECT_REF>
 npm run db:sync-schema-migration   # หลังแก้ database/schema.sql
 npm run db:push                     # push migrations ขึ้น remote ที่ link แล้ว
+```
+
+ถ้า remote DB อยู่ในสภาพค้างบางส่วนและแอปขึ้น `Could not find the table 'public.beats' in the schema cache` ให้รัน:
+
+```powershell
+npx supabase db query --linked --agent=no -f database/ensure-marketplace-schema.sql
 ```
 
 Local stack + seed:

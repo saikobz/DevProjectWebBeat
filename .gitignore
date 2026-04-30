@@ -22,3 +22,6 @@ pnpm-debug.log*
 # misc
 .DS_Store
 *.pem
+
+# Cursor agent debug session logs (local NDJSON; never commit)
+.cursor/debug*.log

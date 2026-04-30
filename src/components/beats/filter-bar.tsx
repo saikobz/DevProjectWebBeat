@@ -12,6 +12,8 @@ const SORT_OPTIONS = [
   { value: "sales", label: "ขายดี" }
 ] as const;
 
+const COMMON_KEYS = ["A minor", "A major", "B minor", "C minor", "D minor", "D major", "E major", "F minor", "F# minor", "G minor"] as const;
+
 export function FilterBar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -28,6 +30,7 @@ export function FilterBar() {
   const [bpmMinInput, setBpmMinInput] = useState(bpmMinFromUrl);
   const [bpmMaxInput, setBpmMaxInput] = useState(bpmMaxFromUrl);
   const [keyInput, setKeyInput] = useState(keyFromUrl);
+  const hasActiveFilters = Boolean(genreFromUrl || qFromUrl || bpmMinFromUrl || bpmMaxFromUrl || keyFromUrl || sortFromUrl !== "newest");
 
   function mergeParams(overrides: Record<string, string | undefined>) {
     const next = new URLSearchParams(searchParams.toString());
@@ -115,6 +118,14 @@ export function FilterBar() {
               {opt.label}
             </Link>
           ))}
+          {hasActiveFilters ? (
+            <Link
+              className="inline-flex min-h-11 items-center rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-zinc-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+              href={pathname}
+            >
+              ล้างตัวกรอง
+            </Link>
+          ) : null}
         </div>
       </div>
 
@@ -151,11 +162,17 @@ export function FilterBar() {
           </label>
           <input
             id="key-filter"
+            list="beat-key-suggestions"
             placeholder="เช่น minor, D"
             value={keyInput}
             onChange={(e) => setKeyInput(e.target.value)}
             className="min-h-11 rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-sm text-white outline-none focus:border-lime-300"
           />
+          <datalist id="beat-key-suggestions">
+            {COMMON_KEYS.map((key) => (
+              <option key={key} value={key} />
+            ))}
+          </datalist>
         </div>
         <div className="sm:col-span-2 lg:col-span-4">
           <button

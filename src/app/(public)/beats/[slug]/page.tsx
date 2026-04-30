@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBeatBySlug, getPublishedBeats } from "@/lib/data/beats";
 import { formatDuration } from "@/lib/format";
+import { BeatViewTracker } from "@/components/analytics/beat-view-tracker";
 import { BeatGrid } from "@/components/beats/beat-grid";
 import { BeatPreviewCard } from "@/components/beats/beat-preview-card";
 import { BeatWaveform } from "@/components/beats/beat-waveform";
@@ -39,6 +40,7 @@ export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
 
   return (
     <div className="space-y-12">
+      <BeatViewTracker beat={beat} />
       <section className="grid gap-8 lg:grid-cols-[1fr_420px]">
         <div className="space-y-6">
           <div>
@@ -47,7 +49,7 @@ export default async function BeatDetailPage({ params }: BeatDetailPageProps) {
             <p className="mt-4 max-w-2xl text-zinc-300">{beat.description}</p>
           </div>
           <BeatPreviewCard beat={beat} queue={publishedBeats} />
-          <BeatWaveform beat={beat} />
+          <BeatWaveform beat={beat} queue={publishedBeats} />
           <div className="grid gap-3 sm:grid-cols-4">
             <Card><p className="text-sm text-zinc-500">BPM</p><p className="mt-1 font-bold text-white">{beat.bpm}</p></Card>
             <Card><p className="text-sm text-zinc-500">Key</p><p className="mt-1 font-bold text-white">{beat.key}</p></Card>
